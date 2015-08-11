@@ -1,45 +1,42 @@
 <?php if ( ! defined('BASEPATH')) exit('No direct script access allowed');
+
 class User extends CI_Controller{
-	public function __construct()
-	{
+
+
+	public function __construct(){
 		parent::__construct();
 		$this->load->model('user_model');
 	}
-	public function index()
-	{
-		if(($this->session->userdata('user_name')!=""))
-		{
+
+	public function index(){
+		if(($this->session->userdata('user_name')!="")) {
 			$this->welcome();
 		}
 		else{
 			$data['title']= 'Home';
-			$this->load->view('registr/header_view',$data);
-			$this->load->view("registr/registration_view.php", $data);
-			$this->load->view('registr/footer_view',$data);
+			$this->load->view('register/header_view',$data);
+			$this->load->view("register/registration_view.php", $data);
+			$this->load->view('register/footer_view',$data);
 		}
 	}
-    public function registr()
-    {
-        if(($this->session->userdata('user_name')!=""))
-        {
+    public function registr(){
+        if(($this->session->userdata('user_name')!="")) {
             $this->welcome();
-        }
-        else{
+        } else{
             $data['title']= 'registration';
-            $this->load->view('registr/header_view',$data);
-            $this->load->view("registr/registration_view.php", $data);
-            $this->load->view('registr/footer_view',$data);
+            $this->load->view('register/header_view',$data);
+            $this->load->view("register/registration_view.php", $data);
+            $this->load->view('register/footer_view',$data);
         }
     }
-	public function welcome()
-	{
+	public function welcome(){
 		$data['title']= 'Welcome';
 		$this->load->view('header_view',$data);
 		$this->load->view('welcome_view.php', $data);
 		$this->load->view('footer_view',$data);
 	}
-	public function login()
-	{
+
+	public function login(){
 		$email=$this->input->post('email');
 		$password=md5($this->input->post('pass'));
 
@@ -47,15 +44,14 @@ class User extends CI_Controller{
 		if($result) $this->welcome();
 		else        $this->index();
 	}
-	public function thank()
-	{
+
+	public function thank(){
 		$data['title']= 'Thank';
 		$this->load->view('header_view',$data);
 		$this->load->view('thank_view.php', $data);
 		$this->load->view('footer_view',$data);
 	}
-	public function registration()
-	{
+	public function registration(){
 		$this->load->library('form_validation');
 		// field name, error message, validation rules
 		$this->form_validation->set_rules('user_name', 'Name', 'trim|required|min_length[4]|xss_clean');
@@ -64,18 +60,14 @@ class User extends CI_Controller{
 		$this->form_validation->set_rules('con_password', 'Password Confirmation', 'trim|required|matches[password]');
         $this->form_validation->set_rules('type', 'Select type', 'required');
 
-		if($this->form_validation->run() == FALSE)
-		{
+		if($this->form_validation->run() == FALSE) {
 			$this->index();
-		}
-		else
-		{
+		} else {
 			$this->user_model->add_user();
 			$this->thank();
 		}
 	}
-	public function logout()
-	{
+	public function logout(){
 		$newdata = array(
 		'user_id'   =>'',
 		'user_name'  =>'',
@@ -87,4 +79,3 @@ class User extends CI_Controller{
 		$this->index();
 	}
 }
-?>

@@ -1,5 +1,7 @@
 <?php if ( ! defined('BASEPATH')) exit('No direct script access allowed');
+
 class User_model extends CI_Model {
+
     public function __construct()
     {
         parent::__construct();
@@ -27,8 +29,7 @@ class User_model extends CI_Model {
         }
         return false;
     }
-    public function add_user()
-    {
+    public function add_user(){
         $data=array(
             'username'=>$this->input->post('user_name'),
             'email'=>$this->input->post('email_address'),
