@@ -1,0 +1,487 @@
+/*
+ RU -> EN
+ EN -> RU
+ */
+jQuery.fn.Translit = function(userOptions)
+{
+    var field = $(this);
+
+    var codes =
+        [
+            //0, //??? ??????? ????????
+            8, // back
+            9, // tab
+            13, // enter
+            116 // F5
+        ];
+
+    var digits =
+        [
+            48, 49, 50, 51, 52, 53, 54, 55, 56, 57,
+            96, 97, 98, 99, 100, 101, 102, 103, 104, 105 // Num Lock
+        ];
+
+    var rus2eng =
+    {
+        '?': 'A',
+        '?': 'B',
+        '?': 'V',
+        '?': 'G',
+        '?': 'D',
+        '?': 'E',
+        '?': 'E',
+        '?': 'ZH',
+        '?': 'Z',
+        '?': 'I',
+        '?': 'Y',
+        '?': 'K',
+        '?': 'L',
+        '?': 'M',
+        '?': 'N',
+        '?': 'O',
+        '?': 'P',
+        '?': 'R',
+        '?': 'S',
+        '?': 'T',
+        '?': 'U',
+        '?': 'F',
+        '?': 'H',
+        '?': 'TC',
+        '?': 'CH',
+        '?': 'SH',
+        '?': 'SCH',
+        '?': '',
+        '?': 'Y',
+        '?': '',
+        '?': 'E',
+        '?': 'U',
+        '?': 'YA',
+        '-': '-',
+        ' ': ' '
+    };
+
+    var options =
+    {
+        digits: false, // ????????? ??? ????????? ?????
+        letters: true, // ????????? ??? ????????? ?????
+        translit: true, // ????????????? ??????????????? ??????? ?????
+        ruschars: false, // ??????????? ??????? ?????
+        spaces: false, // ????????? ??? ????????? ???????
+        nospec: false
+    };
+    $.extend(options, userOptions);
+
+    //??? ? ????? (???????????? ??????)
+    if ($.browser.msie)
+    {
+        field.on
+        (
+            'select focus',
+
+            function()
+            {
+                this.focus();
+                var value = this.value;
+                this.value = '';
+                this.value = value;
+                return false;
+            }
+        );
+    }
+
+    //var fieldLength = field.attr('maxlength');
+
+    var is_change = 0;
+
+    var pattern = new RegExp('^[A-Z]+$')
+    var pattern_eng = /[A-Z]/g;
+    var pattern_with_rus = /[A-Z?-??-???]/g;
+    var pattern_only_rus = /[?-??-???]/g;
+    var pattern_digits = new RegExp('^[0-9]+$');
+    var pattern_digits2 = /[0-9]/g;
+
+    is_alert = 0;
+
+    function checkValue(prepare_value, self)
+    {
+        var value = self.val().replace('_', '');
+
+        for (var i = 0; i < prepare_value.split('').length; i++)
+        {
+            var curVal = prepare_value[i].toUpperCase();
+
+            if (options.translit && rus2eng[curVal] != undefined && options.letters)
+                value += rus2eng[curVal];
+            else
+            {
+                if (pattern.test(curVal) && options.letters && !options.ruschars)
+                    value += curVal;
+                else if (pattern_with_rus.test(curVal) && options.letters && options.ruschars)
+                {
+                    value += curVal;
+                }
+                else if (pattern_digits.test(curVal) && options.digits)
+                    value += curVal;
+                else
+                    value += curVal;
+            }
+
+        };
+        value = value.replace(/\r?\n?\t/g, '')
+        if (options.nospec == true)
+        {
+            var before_value = value;
+            value = value.replace(/[^a-zA-Z0-9?-??-???]/g, '');
+            if (is_alert == 0 && !pattern.test(before_value) && !pattern_with_rus.test(before_value) && !pattern_digits.test(before_value))
+            {
+                if (!pattern_with_rus.test(before_value))
+                {
+                    alert('? ?????, ??????? ? ???????? ?????? ??????????? ?????? ?????. ???? ? ??? ??????? ???, ??????????, ??????? ??? ????? ?????? ??? ???????? ? ???????.\n????? ????????? ?????????? ????????? ?????? ???????? ?? ???? (?? ??????????? ????? ?????????????)');
+                    is_alert = 1;
+                    setTimeout(function() {
+                        is_alert = 0;
+                    }, 200);
+                }
+            }
+        }
+
+        if ( (!options.spaces && value.indexOf(' ') > -1))
+        {
+            value = value.replace(/ /g, '');
+            if (is_alert == 0)
+            {
+                alert('? ?????, ??????? ? ???????? ?????? ??????????? ?????? ?????. ???? ? ??? ??????? ???, ??????????, ??????? ??? ????? ?????? ??? ???????? ? ???????.\n????? ????????? ?????????? ????????? ?????? ???????? ?? ???? (?? ??????????? ????? ?????????????)');
+                is_alert = 1;
+                setTimeout(function() {
+                    is_alert = 0;
+                }, 200)
+            }
+
+        }
+        if (!options.digits && pattern_digits2.test(value))
+        {
+            value = value.replace(/[0-9]+/, '');
+            /*if (is_alert == 0)
+             {
+             alert('? ?????, ??????? ? ???????? ?????? ??????????? ?????? ?????. ???? ? ??? ??????? ???, ??????????, ??????? ??? ????? ?????? ??? ???????? ? ???????.\n????? ????????? ?????????? ????????? ?????? ???????? ?? ???? (?? ??????????? ????? ?????????????)');
+             is_alert = 1;
+             setTimeout(function() {
+             is_alert = 0;
+             }, 200)
+             }*/
+        }
+        if (!options.letters && pattern_eng.test(value) && !pattern_only_rus.test(value))
+        {
+            value = value.replace(/[A-Z]+/, '');
+            if (is_alert == 0 )
+            {
+                alert('????? ????????? ?????????? ????????? ?????? ???????? ?? ???? (?? ??????????? ????? ?????????????)');
+                is_alert = 1;
+                setTimeout(function() {
+                    is_alert = 0;
+                }, 200)
+            }
+        }
+
+        if (pattern_with_rus.test(value) || (pattern_digits.test(value) && options.digits))
+        {
+            if (self.attr('maxlen') != undefined)
+            {
+                if (self.attr('id').split('_')[0] == 'passSeries')
+                {
+                    var digit = value.slice(0,parseInt(self.attr('maxlen'), 10)),
+                        rest = value.slice(parseInt(self.attr('maxlen'), 10));
+
+
+                    if (rest.length > 0) {
+                        self.val(digit);  // trim input value to just one character
+                        next = $('#passNumber_' + self.attr('id').split('_')[1]);
+
+                        if (next.length > 0) {
+                            if (rest.length > parseInt(next.attr('maxlen'), 10))
+                                rest = rest.slice(0, parseInt(next.attr('maxlen'), 10));
+
+                            next.val(rest);  // push the rest of the value into the next input
+                            next.focus();
+                        }
+                    }
+                }
+                else if (self.attr('id').split('_')[0] == 'passNumber')
+                {
+                    var digit = value.slice(0,parseInt(self.attr('maxlen'), 10));
+                    self.val(digit);
+                }
+            }
+            else
+            {
+
+                self.val(value);
+            }
+
+            setTimeout(function() {
+                if ($.browser.msie && self.val().length > 0)
+                    self.css('color', 'black');
+            }, 100);
+        }
+        else
+        {
+            if (is_alert == 0 && !pattern_with_rus.test(value))
+            {
+                alert('? ?????, ??????? ? ???????? ?????? ??????????? ?????? ?????. ???? ? ??? ??????? ???, ??????????, ??????? ??? ????? ?????? ??? ???????? ? ???????.\n????? ????????? ?????????? ????????? ?????? ???????? ?? ???? (?? ??????????? ????? ?????????????)');
+                is_alert = 1;
+                setTimeout(function() {
+                    is_alert = 0;
+                }, 200);
+            }
+            return;
+        }
+
+    }
+
+    /*field.bind
+     (
+     'change',
+     function(e)
+     {
+     if (is_change == 1)
+     {
+     console.log('change')
+     var self = $(this)
+
+     setTimeout(function()
+     {
+     var prepare_value = self.val();
+     checkValue(prepare_value, self);
+     }, 50);
+
+     is_change = 0;
+     }
+     }
+     );*/
+
+    field.on
+    (
+        'paste',
+        function(e)
+        {
+            var self = $(this);
+            if ($.browser.msie)
+                var clipBoardData = window.clipboardData.getData('Text');
+            else
+            {
+                if (e.originalEvent.clipboardData == null || e.originalEvent.clipboardData == undefined)
+                    var clipBoardData = window.clipboardData.getData('Text');
+                else
+                    var clipBoardData = e.originalEvent.clipboardData.getData('Text');
+            }
+
+            is_change = 0;
+
+            setTimeout(function()
+            {
+                self.val(self.val().replace(/_/g, '').slice(0, -clipBoardData.length));
+                checkValue(clipBoardData, self);
+            }, 50);
+        }
+    );
+
+    field.bind
+    (
+        'keypress',
+        function(e)
+        {
+            var charPressed = String.fromCharCode(e.which).toUpperCase();
+            var pattern = /[A-Z]/g;
+            var pattern_with_rus = new RegExp('^[A-Z?-??-???]+$');
+
+            var c = e.charCode
+            var ctrlDown = e.ctrlKey||e.metaKey // Mac support
+
+
+            // Check for ctrl+c, v and x
+            if (ctrlDown && (c==86 || c==118))
+            {
+                //checkPastedValue();
+                is_change = 1;
+                field.change();
+                return true;
+            }
+            else
+            {
+                //????????? ??????
+                if ( options.spaces && charPressed == ' ' )
+                {
+                    return true;
+                }
+
+                if (options.nospec == true && !pattern_with_rus.test(charPressed) && $.inArray(e.keyCode, codes) == -1 && e.keyCode != 37 && e.keyCode != 39 && e.keyCode != 46 && !options.digits && !pattern_digits.test(charPressed))
+                {
+                    alert('1 ? ?????, ??????? ? ???????? ?????? ??????????? ?????? ?????. ???? ? ??? ??????? ???, ??????????, ??????? ??? ????? ?????? ??? ???????? ? ???????.\n????? ????????? ?????????? ????????? ?????? ???????? ?? ???? (?? ??????????? ????? ?????????????, ??? ??????????? ????????? ????? ??? ??????)');
+                    return false;
+                }
+
+                if (options.translit && rus2eng[charPressed] != undefined && options.letters)
+                {
+                    $(this).insertAtCaret(rus2eng[charPressed].toUpperCase());
+                    return false;
+                }
+                else if (pattern_with_rus.test(charPressed) && options.letters && options.ruschars)
+                {
+                    $(this).insertAtCaret(charPressed.toUpperCase());
+                    return false;
+                }
+                else if (pattern.test(charPressed) && options.letters)
+                {
+                    if (options.letters)
+                    {
+                        $(this).insertAtCaret(charPressed.toUpperCase());
+                        return false;
+                    }
+                    else
+                        return true;
+                }
+                else if (e.keyCode == 8 && $(this).attr('id').split('_')[0] == 'passNumber' && $(this).val().replace('_') == '')
+                {
+                    $('#passSeries_' +  $(this).attr('id').split('_')[1]).focus();
+                }
+                else if ($.inArray(e.keyCode, codes) >= 0)
+                {
+                    return true;
+                }
+                else if (options.digits && $.inArray(e.which, digits) >= 0)
+                    return true;
+                else if (e.keyCode == 35 && e.charCode == 0) // End
+                    return true;
+                else if (e.keyCode == 36 && e.charCode == 0) // Home
+                    return true;
+                else if (e.keyCode == 37 && e.charCode == 0) // Arrow Left
+                    return true;
+                else if (e.keyCode == 39 && e.charCode == 0) // Arrow right
+                    return true;
+                else if (e.keyCode == 46 && e.charCode == 0) // Del
+                    return true;
+                else if (e.keyCode == 0 && e.charCode == 32) // Space
+                {
+                    return true;
+                }
+                else if (e.shiftKey && (e.which == 48 || e.which == 57))
+                    return true;
+                //}
+                //else if ($.inArray(e.keyCode, codes) >= 0)
+                //	return true;
+
+                return false;
+            }
+        }
+    );
+
+    /*field.keypress
+     (
+     function(e)
+     {
+     console.log(e)
+     //if (this.value.length < fieldLength)
+     //{
+
+     var charPressed = String.fromCharCode(e.which).toUpperCase();
+     var pattern = /[A-Z]/g;
+     var pattern_with_rus = /[A-Z?-?]/g;
+
+     //????????? ??????
+     if ( options.spaces && charPressed == ' ' )
+     {
+     return true;
+     }
+
+     var c = e.keyCode
+     var ctrlDown = e.ctrlKey||e.metaKey // Mac support
+
+     // Check for ctrl+c, v and x
+     if (ctrlDown && (c==86 || c==118)) return true; // v
+
+     if (options.nospec == true && !pattern_with_rus.test(charPressed) && $.inArray(e.keyCode, codes) == -1 && e.keyCode != 37 && e.keyCode != 39 && e.keyCode != 46)
+     {
+     alert('? ?????, ??????? ? ???????? ?????? ??????????? ?????? ?????. ???? ? ??? ??????? ???, ??????????, ??????? ??? ????? ?????? ??? ???????? ? ???????.');
+     return false;
+     }
+
+     if (options.translit && rus2eng[charPressed] != undefined && options.letters)
+     {
+     $(this).insertAtCaret(rus2eng[charPressed]);
+     return false;
+     }
+     else if (pattern.test(charPressed) && options.letters)
+     {
+     if (options.letters)
+     {
+     $(this).insertAtCaret(charPressed);
+     return false;
+     }
+     else
+     return true;
+     }
+     else if ($.inArray(e.keyCode, codes) >= 0)
+     return true;
+     else if (options.digits && $.inArray(e.which, digits) >= 0)
+     return true;
+     else if (e.keyCode == 35 && e.charCode == 0) // End
+     return true;
+     else if (e.keyCode == 36 && e.charCode == 0) // Home
+     return true;
+     else if (e.keyCode == 37 && e.charCode == 0) // Arrow Left
+     return true;
+     else if (e.keyCode == 39 && e.charCode == 0) // Arrow right
+     return true;
+     else if (e.keyCode == 46 && e.charCode == 0) // Del
+     return true;
+     else if (e.keyCode == 0 && e.charCode == 32) // Space
+     return true;
+     else if (e.shiftKey && (e.which == 48 || e.which == 57))
+     return true;
+     //}
+     //else if ($.inArray(e.keyCode, codes) >= 0)
+     //	return true;
+
+     return false;
+     }
+     );*/
+
+}
+
+jQuery.fn.extend // ??????? ?????? ? INPUT[TEXT] ? TEXTAREA ? ??????? ???????
+({
+    insertAtCaret: function(myValue)
+    {
+        return this.each
+        (
+            function(i)
+            {
+                if (document.selection)
+                {
+                    // ??? ????????? ???? Internet Explorer
+                    this.focus();
+                    var sel = document.selection.createRange();
+                    sel.text = myValue;
+                    this.focus();
+                }
+                else if (this.selectionStart || this.selectionStart == '0')
+                {
+                    // ??? ????????? ???? Firefox ? ?????? Webkit-??
+                    var startPos = this.selectionStart;
+                    var endPos = this.selectionEnd;
+                    var scrollTop = this.scrollTop;
+                    this.value = this.value.substring(0, startPos)+myValue+this.value.substring(endPos,this.value.length);
+                    this.focus();
+                    this.selectionStart = startPos + myValue.length;
+                    this.selectionEnd = startPos + myValue.length;
+                    this.scrollTop = scrollTop;
+                }
+                else
+                {
+                    this.value += myValue;
+                    this.focus();
+                }
+            }
+        )
+    }
+});
